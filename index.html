@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Clean Flip Countdown</title>
+<title>Flip Countdown</title>
 
 <style>
 body {
@@ -50,7 +50,7 @@ h1 {
   overflow: hidden;
 }
 
-/* CENTER LINE */
+/* LINE */
 .card::after {
   content: "";
   position: absolute;
@@ -73,17 +73,14 @@ h1 {
   transform-origin: bottom;
 }
 
-/* ANIMATION */
 .flip {
   animation: flip 0.4s ease;
 }
 
 @keyframes flip {
-  0% { transform: rotateX(0); }
-  100% { transform: rotateX(-90deg); }
+  to { transform: rotateX(-90deg); }
 }
 
-/* LABEL */
 .label {
   margin-top: 12px;
   color: #ff4d4d;
@@ -95,7 +92,7 @@ h1 {
 </head>
 <body>
 
-<h1>ENDING SOON</h1>
+<h1>COMING SOON</h1>
 
 <div class="container">
 
@@ -131,14 +128,11 @@ function createCard() {
   return card;
 }
 
-function setup(unit) {
-  const el = document.getElementById(unit);
-  el.innerHTML = "";
-  el.appendChild(createCard());
-  el.appendChild(createCard());
+function ensureDigits(container, length) {
+  while (container.children.length < length) {
+    container.prepend(createCard());
+  }
 }
-
-["days","hours","minutes","seconds"].forEach(setup);
 
 let last = {};
 
@@ -164,15 +158,20 @@ function update() {
   const diff = endDate - now;
 
   const values = {
-    days: Math.floor(diff / (1000*60*60*24)),
-    hours: Math.floor((diff/(1000*60*60))%24),
-    minutes: Math.floor((diff/(1000*60))%60),
-    seconds: Math.floor((diff/1000)%60)
+    days: Math.floor(diff / (1000*60*60*24)).toString(),
+    hours: Math.floor((diff/(1000*60*60))%24).toString().padStart(2,"0"),
+    minutes: Math.floor((diff/(1000*60))%60).toString().padStart(2,"0"),
+    seconds: Math.floor((diff/1000)%60).toString().padStart(2,"0")
   };
 
   for (let key in values) {
-    const str = values[key].toString().padStart(2,"0");
-    const cards = document.getElementById(key).children;
+    const str = values[key];
+    const container = document.getElementById(key);
+
+    // 🔥 dynamic digits (important)
+    ensureDigits(container, str.length);
+
+    const cards = container.children;
 
     str.split("").forEach((digit,i) => {
       if (!last[key] || last[key][i] !== digit) {
