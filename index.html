@@ -149,6 +149,8 @@ h1 {
 <script>
 const endDate = new Date("2026-06-01 00:00:00");
 
+let lastValues = {};
+
 function update() {
   const now = new Date();
   const diff = endDate - now;
@@ -167,14 +169,20 @@ function update() {
 
     const newVal = values[key].toString().padStart(2, "0");
 
-    if (top.textContent !== newVal) {
+    if (lastValues[key] !== newVal) {
+
+      // 👇 ΣΗΜΑΝΤΙΚΟ
+      top.textContent = lastValues[key] || newVal;
+      bottom.textContent = newVal;
+
       el.classList.add("flip");
 
       setTimeout(() => {
         top.textContent = newVal;
-        bottom.textContent = newVal;
         el.classList.remove("flip");
-      }, 200);
+      }, 400);
+
+      lastValues[key] = newVal;
     }
   }
 }
