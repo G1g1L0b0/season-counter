@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <title>Season Countdown</title>
 
+<!-- FLIPDOWN LIBRARY -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flipdown@0.3.2/dist/flipdown.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flipdown@0.3.2/dist/flipdown.min.js"></script>
+
 <style>
 body {
   background: radial-gradient(circle, #111 0%, #000 100%);
@@ -13,45 +17,44 @@ body {
   padding-top: 80px;
 }
 
-/* TITLE (clean now) */
+/* TITLE */
 h1 {
   font-size: 48px;
   letter-spacing: 4px;
   margin-bottom: 70px;
 }
 
-/* CONTAINER */
-.container {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
+/* FLIP CONTAINER */
+#flipdown {
+  margin: 0 auto;
 }
 
-/* EACH BLOCK */
-.time-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* LABELS (DAYS, HOURS...) */
+.flipdown .rotor-group-heading {
+  color: #ff4d4d !important;
+  letter-spacing: 2px;
+  margin-top: 15px;
 }
 
-/* BOX */
-.box {
-  background: #1a1a1a;
-  width: 130px;
-  height: 110px;
+/* BOX STYLE */
+.flipdown .rotor {
+  background: #1a1a1a !important;
   border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-
   box-shadow:
-    0 0 15px rgba(255,0,0,0.15),
+    0 0 15px rgba(255,0,0,0.2),
     inset 0 0 10px rgba(255,255,255,0.05);
 }
 
-/* middle line */
-.box::after {
+/* NUMBERS */
+.flipdown .rotor-top,
+.flipdown .rotor-bottom {
+  color: white;
+  font-size: 48px;
+  text-shadow: 0 0 10px rgba(255,0,0,0.5);
+}
+
+/* CENTER LINE EFFECT */
+.flipdown .rotor:after {
   content: "";
   position: absolute;
   top: 50%;
@@ -60,32 +63,6 @@ h1 {
   background: black;
   opacity: 0.7;
 }
-
-/* NUMBER PERFECT CENTER */
-.number {
-  font-size: 48px;
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(255,0,0,0.5);
-}
-
-/* LABEL OUTSIDE */
-.label {
-  margin-top: 15px;
-  font-size: 14px;
-  color: #ff4d4d;
-  letter-spacing: 3px;
-}
-
-/* FLIP */
-.flip {
-  animation: flip 0.4s ease;
-}
-
-@keyframes flip {
-  0% { transform: rotateX(0); }
-  50% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0); }
-}
 </style>
 
 </head>
@@ -93,71 +70,21 @@ h1 {
 
 <h1>COMING SOON</h1>
 
-<div class="container">
-
-  <div class="time-block">
-    <div class="box">
-      <div id="days" class="number">00</div>
-    </div>
-    <div class="label">DAYS</div>
-  </div>
-
-  <div class="time-block">
-    <div class="box">
-      <div id="hours" class="number">00</div>
-    </div>
-    <div class="label">HOURS</div>
-  </div>
-
-  <div class="time-block">
-    <div class="box">
-      <div id="minutes" class="number">00</div>
-    </div>
-    <div class="label">MINUTES</div>
-  </div>
-
-  <div class="time-block">
-    <div class="box">
-      <div id="seconds" class="number">00</div>
-    </div>
-    <div class="label">SECONDS</div>
-  </div>
-
-</div>
+<div id="flipdown" class="flipdown"></div>
 
 <script>
-const endDate = new Date("2026-06-01 00:00:00").getTime();
-let lastValues = {};
+document.addEventListener('DOMContentLoaded', () => {
 
-function updateCountdown() {
-  const now = new Date().getTime();
-  const diff = endDate - now;
+  // ΒΑΛΕ ΤΗΝ ΗΜΕΡΟΜΗΝΙΑ ΣΟΥ ΕΔΩ
+  const endDate = new Date("2026-06-01 00:00:00").getTime() / 1000;
 
-  const values = {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
-    seconds: Math.floor((diff / 1000) % 60)
-  };
+  new FlipDown(endDate)
+    .start()
+    .ifEnded(() => {
+      document.getElementById("flipdown").innerHTML = "<h2>Season Ended</h2>";
+    });
 
-  for (let key in values) {
-    const el = document.getElementById(key);
-
-    if (lastValues[key] !== values[key]) {
-      el.classList.add("flip");
-
-      setTimeout(() => {
-        el.innerText = values[key].toString().padStart(2, "0");
-        el.classList.remove("flip");
-      }, 200);
-
-      lastValues[key] = values[key];
-    }
-  }
-}
-
-setInterval(updateCountdown, 1000);
-updateCountdown();
+});
 </script>
 
 </body>
