@@ -134,28 +134,8 @@ h1 {
   </div>
 
 </div>
-
 <script>
 const endDate = new Date("2026-06-01 00:00:00");
-
-function createDigit() {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.innerHTML = `
-    <div class="top">0</div>
-    <div class="bottom">0</div>
-  `;
-  return card;
-}
-
-function setup(unit) {
-  const el = document.getElementById(unit);
-  el.innerHTML = "";
-  el.appendChild(createDigit());
-  el.appendChild(createDigit());
-}
-
-["days","hours","minutes","seconds"].forEach(setup);
 
 let last = {};
 
@@ -182,13 +162,18 @@ function update() {
 
       if (!last[key] || last[key][i] !== digit) {
 
-        top.textContent = last[key] ? last[key][i] : digit;
+        // 👇 Βάζουμε ΜΟΝΟ το νέο digit
         bottom.textContent = digit;
 
+        // flip
         card.classList.add("flip");
 
         setTimeout(()=>{
           top.textContent = digit;
+
+          // 👇 ΚΡΥΒΟΥΜΕ το κάτω μισό (για να μην φαίνεται διπλό)
+          bottom.textContent = "";
+
           card.classList.remove("flip");
         },400);
       }
@@ -201,6 +186,8 @@ function update() {
 setInterval(update,1000);
 update();
 </script>
+return card;
+
 
 </body>
 </html>
