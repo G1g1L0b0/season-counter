@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Flip Countdown</title>
+<title>Real Flip Countdown</title>
 
 <style>
 body {
   background: radial-gradient(circle, #111 0%, #000 100%);
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   text-align: center;
   padding-top: 80px;
 }
@@ -19,29 +19,32 @@ h1 {
   letter-spacing: 4px;
 }
 
-/* CONTAINER */
 .container {
   display: flex;
   justify-content: center;
-  gap: 30px;
+  gap: 40px;
 }
 
-/* EACH UNIT */
 .unit {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* FLIP CARD */
-.flip-card {
+/* DIGITS ROW */
+.digits {
+  display: flex;
+  gap: 8px;
+}
+
+/* CARD */
+.card {
   position: relative;
-  width: 90px;
-  height: 100px;
+  width: 60px;
+  height: 80px;
   perspective: 300px;
 }
 
-/* TOP & BOTTOM */
 .top, .bottom {
   position: absolute;
   width: 100%;
@@ -50,25 +53,21 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 40px;
-  border-radius: 10px;
-  overflow: hidden;
+  font-size: 36px;
+  border-radius: 8px;
 }
 
-/* TOP */
 .top {
   top: 0;
   border-bottom: 1px solid #000;
 }
 
-/* BOTTOM */
 .bottom {
   bottom: 0;
   border-top: 1px solid #000;
 }
 
-/* CENTER LINE */
-.flip-card::after {
+.card::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -85,23 +84,21 @@ h1 {
   letter-spacing: 2px;
 }
 
-/* FLIP ANIMATION */
+/* FLIP */
 .flip .top {
   animation: flipTop 0.4s forwards;
 }
-
 .flip .bottom {
   animation: flipBottom 0.4s forwards;
 }
 
 @keyframes flipTop {
-  0% { transform: rotateX(0); }
-  100% { transform: rotateX(-90deg); }
+  to { transform: rotateX(-90deg); }
 }
 
 @keyframes flipBottom {
-  0% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0); }
+  from { transform: rotateX(90deg); }
+  to { transform: rotateX(0); }
 }
 </style>
 
@@ -112,35 +109,27 @@ h1 {
 
 <div class="container">
 
+  <!-- DAYS -->
   <div class="unit">
-    <div class="flip-card" id="days">
-      <div class="top">00</div>
-      <div class="bottom">00</div>
-    </div>
+    <div class="digits" id="days"></div>
     <div class="label">DAYS</div>
   </div>
 
+  <!-- HOURS -->
   <div class="unit">
-    <div class="flip-card" id="hours">
-      <div class="top">00</div>
-      <div class="bottom">00</div>
-    </div>
+    <div class="digits" id="hours"></div>
     <div class="label">HOURS</div>
   </div>
 
+  <!-- MINUTES -->
   <div class="unit">
-    <div class="flip-card" id="minutes">
-      <div class="top">00</div>
-      <div class="bottom">00</div>
-    </div>
+    <div class="digits" id="minutes"></div>
     <div class="label">MINUTES</div>
   </div>
 
+  <!-- SECONDS -->
   <div class="unit">
-    <div class="flip-card" id="seconds">
-      <div class="top">00</div>
-      <div class="bottom">00</div>
-    </div>
+    <div class="digits" id="seconds"></div>
     <div class="label">SECONDS</div>
   </div>
 
@@ -149,45 +138,67 @@ h1 {
 <script>
 const endDate = new Date("2026-06-01 00:00:00");
 
-let lastValues = {};
+function createDigit() {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="top">0</div>
+    <div class="bottom">0</div>
+  `;
+  return card;
+}
+
+function setup(unit) {
+  const el = document.getElementById(unit);
+  el.innerHTML = "";
+  el.appendChild(createDigit());
+  el.appendChild(createDigit());
+}
+
+["days","hours","minutes","seconds"].forEach(setup);
+
+let last = {};
 
 function update() {
   const now = new Date();
   const diff = endDate - now;
 
   const values = {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
-    seconds: Math.floor((diff / 1000) % 60)
+    days: Math.floor(diff / (1000*60*60*24)),
+    hours: Math.floor((diff/(1000*60*60))%24),
+    minutes: Math.floor((diff/(1000*60))%60),
+    seconds: Math.floor((diff/1000)%60)
   };
 
   for (let key in values) {
-    const el = document.getElementById(key);
-    const top = el.querySelector(".top");
-    const bottom = el.querySelector(".bottom");
+    const str = values[key].toString().padStart(2,"0");
+    const container = document.getElementById(key);
+    const cards = container.children;
 
-    const newVal = values[key].toString().padStart(2, "0");
+    str.split("").forEach((digit,i) => {
+      const card = cards[i];
+      const top = card.querySelector(".top");
+      const bottom = card.querySelector(".bottom");
 
-    if (lastValues[key] !== newVal) {
+      if (!last[key] || last[key][i] !== digit) {
 
-      // 👇 ΣΗΜΑΝΤΙΚΟ
-      top.textContent = lastValues[key] || newVal;
-      bottom.textContent = newVal;
+        top.textContent = last[key] ? last[key][i] : digit;
+        bottom.textContent = digit;
 
-      el.classList.add("flip");
+        card.classList.add("flip");
 
-      setTimeout(() => {
-        top.textContent = newVal;
-        el.classList.remove("flip");
-      }, 400);
+        setTimeout(()=>{
+          top.textContent = digit;
+          card.classList.remove("flip");
+        },400);
+      }
+    });
 
-      lastValues[key] = newVal;
-    }
+    last[key] = str;
   }
 }
 
-setInterval(update, 1000);
+setInterval(update,1000);
 update();
 </script>
 
