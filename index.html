@@ -2,11 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Season Countdown</title>
-
-<!-- FLIPDOWN -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flipdown@0.3.2/dist/flipdown.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flipdown@0.3.2/dist/flipdown.min.js"></script>
+<title>Flip Countdown</title>
 
 <style>
 body {
@@ -17,67 +13,95 @@ body {
   padding-top: 80px;
 }
 
-/* TITLE */
 h1 {
   font-size: 48px;
+  margin-bottom: 60px;
   letter-spacing: 4px;
-  margin-bottom: 70px;
 }
 
-/* FIX WHOLE FLIPDOWN LAYOUT */
-.flipdown {
+/* CONTAINER */
+.container {
   display: flex;
   justify-content: center;
   gap: 30px;
 }
 
-/* EACH UNIT (days/hours etc) */
-.flipdown .rotor-group {
+/* EACH UNIT */
+.unit {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* KEEP ONLY ONE ROW (FIX STACK BUG) */
-.flipdown .rotor-group .rotor {
-  margin: 0;
+/* FLIP CARD */
+.flip-card {
+  position: relative;
+  width: 90px;
+  height: 100px;
+  perspective: 300px;
 }
 
-/* STYLE BOX */
-.flipdown .rotor {
-  background: #1a1a1a !important;
-  border-radius: 12px;
-  box-shadow:
-    0 0 12px rgba(255,0,0,0.15),
-    inset 0 0 8px rgba(255,255,255,0.05);
+/* TOP & BOTTOM */
+.top, .bottom {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  background: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-/* FIX NUMBER SIZE */
-.flipdown .rotor-top,
-.flipdown .rotor-bottom {
-  font-size: 42px !important;
-  color: white;
-  text-shadow: 0 0 8px rgba(255,0,0,0.5);
+/* TOP */
+.top {
+  top: 0;
+  border-bottom: 1px solid #000;
 }
 
-/* REMOVE EXTRA STACK EFFECT */
-.flipdown .rotor-leaf {
-  display: none;
+/* BOTTOM */
+.bottom {
+  bottom: 0;
+  border-top: 1px solid #000;
 }
 
-/* LABELS UNDER */
-.flipdown .rotor-group-heading {
-  margin-top: 15px;
-  color: #ff4d4d !important;
+/* CENTER LINE */
+.flip-card::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  background: black;
+}
+
+/* LABEL */
+.label {
+  margin-top: 12px;
+  color: #ff4d4d;
   font-size: 14px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
-/* REMOVE DOTS */
-.flipdown .rotor-group:nth-child(2)::after,
-.flipdown .rotor-group:nth-child(3)::after {
-  display: none;
+/* FLIP ANIMATION */
+.flip .top {
+  animation: flipTop 0.4s forwards;
+}
+
+.flip .bottom {
+  animation: flipBottom 0.4s forwards;
+}
+
+@keyframes flipTop {
+  0% { transform: rotateX(0); }
+  100% { transform: rotateX(-90deg); }
+}
+
+@keyframes flipBottom {
+  0% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
 }
 </style>
 
@@ -86,20 +110,77 @@ h1 {
 
 <h1>COMING SOON</h1>
 
-<div id="flipdown" class="flipdown"></div>
+<div class="container">
+
+  <div class="unit">
+    <div class="flip-card" id="days">
+      <div class="top">00</div>
+      <div class="bottom">00</div>
+    </div>
+    <div class="label">DAYS</div>
+  </div>
+
+  <div class="unit">
+    <div class="flip-card" id="hours">
+      <div class="top">00</div>
+      <div class="bottom">00</div>
+    </div>
+    <div class="label">HOURS</div>
+  </div>
+
+  <div class="unit">
+    <div class="flip-card" id="minutes">
+      <div class="top">00</div>
+      <div class="bottom">00</div>
+    </div>
+    <div class="label">MINUTES</div>
+  </div>
+
+  <div class="unit">
+    <div class="flip-card" id="seconds">
+      <div class="top">00</div>
+      <div class="bottom">00</div>
+    </div>
+    <div class="label">SECONDS</div>
+  </div>
+
+</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+const endDate = new Date("2026-06-01 00:00:00");
 
-  const endDate = new Date("2026-06-01 00:00:00").getTime() / 1000;
+function update() {
+  const now = new Date();
+  const diff = endDate - now;
 
-  new FlipDown(endDate)
-    .start()
-    .ifEnded(() => {
-      document.getElementById("flipdown").innerHTML = "<h2>Season Ended</h2>";
-    });
+  const values = {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    seconds: Math.floor((diff / 1000) % 60)
+  };
 
-});
+  for (let key in values) {
+    const el = document.getElementById(key);
+    const top = el.querySelector(".top");
+    const bottom = el.querySelector(".bottom");
+
+    const newVal = values[key].toString().padStart(2, "0");
+
+    if (top.textContent !== newVal) {
+      el.classList.add("flip");
+
+      setTimeout(() => {
+        top.textContent = newVal;
+        bottom.textContent = newVal;
+        el.classList.remove("flip");
+      }, 200);
+    }
+  }
+}
+
+setInterval(update, 1000);
+update();
 </script>
 
 </body>
